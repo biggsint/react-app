@@ -1,0 +1,30 @@
+name: insighful-test
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    command: start-dev --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+        - ./keycloak/my-realm.json:/opt/keycloak/data/import/keycloak-realm.json
+    ports:
+      - 8080:8080
+
+
+  specmatic:
+    image: specmatic/specmatic:latest
+    command: stub --port 8081 --spec ./specs/insight.yaml
+    volumes:
+      - ./stubs:/stubs
+    ports:
+      - 8081:8081
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 5555:80
+    volumes:
+      - ../website/dist:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
